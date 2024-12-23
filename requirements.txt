@@ -1,3 +1,4 @@
 bcrypt
 datetime
 pyotp
+mysql-connector-python
