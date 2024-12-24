@@ -15,7 +15,7 @@ def is_account_locked(username):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT failed_logins, last_login FROM users_pass WHERE username = ?", (username,))
+        cursor.execute("SELECT failed_logins, last_login FROM users WHERE username = ?", (username,))
         result = cursor.fetchone()
     
         if result:
@@ -49,7 +49,7 @@ def register(username, password, email):
         cursor = conn.cursor()
         # dopisat\
         try:
-            cursor.execute("INSERT INTO users_pass (username, password, email, role, failed_logins, last_login) VALUES (?, ?, ?, 'user', 0, NULL)", (username, hashed_password, email))
+            cursor.execute("INSERT INTO users (username, password, email, role, failed_logins, last_login) VALUES (?, ?, ?, 'user', 0, NULL)", (username, hashed_password, email))
         
             conn.commit()
         finally:
@@ -74,12 +74,12 @@ def login(username, password):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT password, failed_logins FROM user_pass WHERE username = ?", (username,))
+        cursor.execute("SELECT password, failed_logins FROM users WHERE username = ?", (username,))
         result = cursor.fetchone()
    
     
         if result and checkpw(password.encode(), result[0]):
-            cursor.execute("UPDATE user_pass SET failed_logins = 0, last_login = ?", (datetime.now(),))
+            cursor.execute("UPDATE users SET failed_logins = 0, last_login = ?", (datetime.now(),))
             
             conn.commit()
             
@@ -87,7 +87,7 @@ def login(username, password):
             
             return True
         else:
-            cursor.execute("UPDATE user_pass SET failed_logins = failed_logins + 1, last_login = ?", (datetime.now(),))
+            cursor.execute("UPDATE users SET failed_logins = failed_logins + 1, last_login = ?", (datetime.now(),))
             
             conn.commit()
             
@@ -107,7 +107,7 @@ def change_password(username, old_password, new_password):
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
-            cursor.execute("UPDATE user_pass SET password = ? WHERE username = ?", (hashed_password, username))
+            cursor.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_password, username))
             
             conn.commit()
             
@@ -127,7 +127,7 @@ def define_role(username):
         conn = get_db_connection()
         cursor = conn.cursor()
     
-        cursor.execute("SELECT role FROM user_pass WHERE username = ?", (username,))
+        cursor.execute("SELECT role FROM users WHERE username = ?", (username,))
 
         result = cursor.fetchone()
         return result[0] if result else None
@@ -154,7 +154,7 @@ def enable_2fa(username):
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
-            cursor.execute("UPDATE user_pass SET opt_secret = ? WHERE username = ?", (secret, username))
+            cursor.execute("UPDATE users SET opt_secret = ? WHERE username = ?", (secret, username))
             
             conn.commit()
             
@@ -173,7 +173,7 @@ def verify_2fa(username, opt_code):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    cursor.execute("SELECT opt_secret FROM user_pass WHERE username = ?", (username,))
+    cursor.execute("SELECT opt_secret FROM users WHERE username = ?", (username,))
     
     result = cursor.fetchone()
     conn.close()
