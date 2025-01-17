@@ -1,4 +1,6 @@
-bcrypt
-datetime
-pyotp
-mysql-connector-python
+bcrypt==4.2.1
+cffi==1.17.1
+cryptography==44.0.0
+mysql-connector-python==9.1.0
+pycparser==2.22
+pyotp==2.9.0

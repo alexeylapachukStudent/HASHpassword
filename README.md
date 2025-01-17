@@ -1,2 +1,2 @@
 # HASHpassword
-Application is written as a project in WUST
+Application is written as a project at WUST
