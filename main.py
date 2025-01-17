@@ -1,5 +1,5 @@
 import tkinter as tk
-from gui import HASHapp
+from app.gui import HASHapp
 
 def run_app():
     root = tk.Tk()
