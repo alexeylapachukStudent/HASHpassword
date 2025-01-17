@@ -188,8 +188,6 @@ def generate_otp_secret():
 # Function verifies the OTP
 def verify_otp(secret, opt_code):
     totp = pyotp.TOTP(secret)
-    print(opt_code)
-    print(totp.verify(opt_code))
     return totp.verify(opt_code)
 
 # Define the cipher using a key
@@ -220,8 +218,9 @@ def enable_2fa(username):
             print("2FA is not enabled")
             
             # Encrypt and store OTP secret
+            encrypted_secret = encrypt_secret(secret)
             
-            cursor.execute("UPDATE users SET opt_secret = ? WHERE username = ?", (secret, username))
+            cursor.execute("UPDATE users SET opt_secret = ? WHERE username = ?", (encrypted_secret, username))
             conn.commit()
             
 
@@ -247,7 +246,7 @@ def verify_2fa(username, otp_code):
         if result:
             # Decrypt stored OTP secret
             
-            secret = result[0]
+            secret = decrypt_secret(result[0])
             
             if verify_otp(secret, otp_code):
                 logs_events("2fa", username, "success", "2FA verified")
