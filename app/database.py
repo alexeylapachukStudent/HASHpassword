@@ -4,7 +4,7 @@ import sqlite3
 
 def get_db_connection():
     try:
-        conn = sqlite3.connect('test_database.db')  # это создаст файл test_database.db в текущей директории
+        conn = sqlite3.connect('test_database.db') 
         return conn
     except Error as e:
         print(f"Error: {e}")
