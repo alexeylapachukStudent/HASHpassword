@@ -10,6 +10,7 @@ from app.auth import register, login, change_password, enable_2fa, verify_2fa
 class HASHapp:
     def __init__(self, root):
         self.root = root
+        self.root.geometry("700x700")
         self.root.title("Authentication System")
         self.create_widgets()
 
