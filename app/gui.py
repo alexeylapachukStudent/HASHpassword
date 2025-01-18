@@ -1,12 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image
-
 import pyotp
 import qrcode
 from app.auth import register, login, change_password, enable_2fa, verify_2fa
-import tkinter as tk
-from tkinter import messagebox
+
 
 # GUI Application
 class HASHapp:
@@ -157,9 +155,14 @@ class HASHapp:
             qr.save(qr_file)
             
             
-            # Открываем QR-код для пользователя
-            img = Image.open(qr_file)
-            img.show()
+            # Loading the QR code image
+            qr_img = Image.open(qr_file)
+            qr_img = qr_img.resize((200, 200))
+            self.qr_photo = tk.PhotoImage(file=qr_file)
+            
+            qr_label = tk.Label(self.content_frame, image=self.qr_photo)
+            qr_label.pack(pady=10)
+            
             
         else:
             messagebox.showerror("Error", "Failed to enable 2FA")

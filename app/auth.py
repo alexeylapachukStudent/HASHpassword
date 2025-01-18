@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 from bcrypt import checkpw, gensalt, hashpw
 from cryptography.fernet import Fernet
 import pyotp, re
@@ -30,7 +31,9 @@ def is_account_locked(username):
         result = cursor.fetchone()
     
         if result:
-            failed_logins, last_login = result
+            failed_logins, last_login_str = result
+            last_login = datetime.strptime(last_login_str, "%Y-%m-%d %H:%M:%S.%f")
+            
             if failed_logins >= 5 and datetime.now() - last_login < timedelta(minutes=5):
                 return True
     finally:
@@ -135,17 +138,22 @@ def change_password(username, old_password, new_password):
     try:
         # Checks if the new password is valid
         validate_input(username, new_password)
-        
-        if checkpw(new_password.encode(), old_password.encode()):
+
+        # Checks if the new password is different from the old password
+        if new_password == old_password:
             return "New password must be different from the old password"
         
+
         # Generating a hashed password
         hashed_password = hashpw(new_password.encode(), gensalt())
+
+
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
             # Updating the password in the database that is connected to the user
             cursor.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_password, username))
+            
             
             conn.commit()
             # Logging the event when the user changes the password
@@ -191,9 +199,18 @@ def verify_otp(secret, opt_code):
     return totp.verify(opt_code)
 
 # Define the cipher using a key
-key = Fernet.generate_key()
+
+def get_key():
+    with open('config.json', 'r') as config_file:
+        config = json.load(config_file)
+        key = config["FERNET_KEY"]
+    return key
+
+key = get_key()
 cipher = Fernet(key)
 
+
+# Block of function that encrypts and decrypts the secret
 def encrypt_secret(secret):
     return cipher.encrypt(secret.encode()).decode()
 
@@ -223,7 +240,7 @@ def enable_2fa(username):
             cursor.execute("UPDATE users SET opt_secret = ? WHERE username = ?", (encrypted_secret, username))
             conn.commit()
             
-
+            
             logs_events("2fa", username, "success", "2FA enabled")
             return secret
         finally:
